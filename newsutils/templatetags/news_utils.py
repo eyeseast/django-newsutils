@@ -10,11 +10,12 @@ register = template.Library()
 
 class GoogleNewsNode(template.Node):
     def __init__(self, query, var_name=None):
-        self.query = query
+        self.query = template.Variable(query)
         self.var_name = var_name
     
     def render(self, context):
         base_url = 'http://ajax.googleapis.com/ajax/services/search/news?'
+        self.query.resolve(context)
         params = {
             'v': '1.0',
             'rsz': 'large', # get 8 results
