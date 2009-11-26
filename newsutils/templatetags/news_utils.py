@@ -22,7 +22,7 @@ class GoogleNewsNode(template.Node):
             'q': self.query
         }
         if hasattr(settings, "GOOGLE_API_KEY"):
-            params['apikey']
+            params['key']
         
         url = base_url + urllib.urlencode(params)
         results = utils.getjson(url)['responseData']['results']
