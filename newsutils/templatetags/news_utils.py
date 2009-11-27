@@ -63,3 +63,26 @@ def do_google_news(parser, token):
     else:
         return GoogleNewsNode(args)
 
+
+@register.filter('parsedate')
+def parsedate(value, format=None):
+    import dateutil.parser
+    from django.utils.dateformat import DateFormat
+    dt = dateutil.parser.parse(value)
+    if format:
+        return DateFormat(dt).format(format)
+    return dt
+
+
+@register.filter
+def datetime_from_tuple(value):
+    """
+    Makes a time tuple into a real python datetime object.
+    
+    This is primarily a convenience filter for working with Feedparser
+    """
+    stamp = time.mktime(value)
+    dt = datetime.datetime.fromtimestamp(stamp)
+    return dt
+    
+
