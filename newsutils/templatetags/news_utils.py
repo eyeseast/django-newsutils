@@ -1,3 +1,5 @@
+import datetime
+import time
 import re
 import urllib
 from django import template
