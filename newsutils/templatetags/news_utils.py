@@ -68,6 +68,11 @@ def do_google_news(parser, token):
 
 @register.filter('parsedate')
 def parsedate(value, format=None):
+    """
+    Parses a date-like string into a Python datetime object,
+    with an optional format argument, which follows Django's
+    DateFormat, like the built-in date filter.
+    """
     import dateutil.parser
     from django.utils.dateformat import DateFormat
     dt = dateutil.parser.parse(value)
@@ -77,7 +82,7 @@ def parsedate(value, format=None):
 
 
 @register.filter
-def datetime_from_tuple(value):
+def datetime_from_tuple(value, format=None):
     """
     Makes a time tuple into a real python datetime object.
     
@@ -85,6 +90,8 @@ def datetime_from_tuple(value):
     """
     stamp = time.mktime(value)
     dt = datetime.datetime.fromtimestamp(stamp)
+    if format:
+        return DateFormat(dt).format(format)
     return dt
     
 
