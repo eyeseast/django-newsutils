@@ -14,7 +14,6 @@ Since it is part of Django-NewsUtils, it uses other parts of
 Django where it makes life easier.
 """
 import datetime
-import dateutil.parser
 import urllib, urllib2
 try:
     import json
@@ -56,31 +55,15 @@ class Publish2Link(Publish2Object):
         
     def __init__(self, d):
         self.__dict__ = d
-        self.publication_date = self._set_pub_date()
-        self.created_date = self._set_created()
+        self.publication_date = utils.parsedate(d['publication_date'])
+        self.created_date = utils.parsedate(d['created_date'])
         if hasattr(self, 'tags'):
             tags = self.tags[0].values()
             self.tags = [Publish2Tag(t) for t in tags]
         else:
             self.tags = []
         
-    def _set_pub_date(self):
-        "Returns a python datetime object from Publish2's date string"
-        
-        try:
-            pd = datetime.datetime.strptime(self.publication_date, u'%B %d, %Y')
-            return pd
-        except ValueError:
-            return self.publication_date
-    
-    def _set_created(self):
-        format = u'%B %d, %Y at %I:%M%p %Z'
-        try:
-            dt = datetime.datetime.strptime(self.created_date, format)
-            return dt
-        except ValueError:
-            return self.created_date
-    
+            
     def __str__(self):
         return self.title
 
