@@ -28,3 +28,13 @@ def getjson(url, headers=None):
         
     request = urllib2.Request(url, headers=headers)
     return json.load(urllib2.urlopen(request))
+
+
+def parsedate(s):
+    """
+    Convert a string into a (local, naive) datetime object.
+    """
+    dt = dateutil.parser.parse(s)
+    if dt.tzinfo:
+        dt = dt.astimezone(dateutil.tz.tzlocal()).replace(tzinfo=None)
+    return dt
