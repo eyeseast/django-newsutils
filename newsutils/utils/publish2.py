@@ -22,6 +22,8 @@ except ImportError:
 
 from newsutils import utils
 
+__all__ = ('Publish2Error', 'get_for_journalist', 'get_for_newsgroup')
+
 
 class Publish2Error(Exception):
     "Exception for Publish2 errors"

@@ -6,9 +6,11 @@ from django import template
 from django.conf import settings
 
 from newsutils import utils
+from newsutils.utils import publish2
 
 register = template.Library()
 
+# tags
 
 class GoogleNewsNode(template.Node):
     def __init__(self, query, var_name=None):
@@ -65,6 +67,39 @@ def do_google_news(parser, token):
     else:
         return GoogleNewsNode(args)
 
+
+def do_publish2(parser, token):
+    """
+    A template tag interface to Publish2.
+    The tag gets recent links for journalists or newsgroups.
+    
+    Usage:
+    
+    {% publish2 get_for_journalist "Chris Amico" "politics" 5 as my_politics_links %}
+    
+    Or,
+    
+    {% publish2 get_for_newsgroup "NewsHour" 10 as newshour_links %}
+    
+    Arguments:
+        - a publish2 function
+        - a username or newsgroup name, depending on which function is called
+        - an optional topic
+        - a number of links to get (technically optional, but the default is 100)
+        - an optional variable name to store the results in
+        
+    """
+    bits = token.split_contents()
+    func = bits[1]
+    args = bits[2:]
+    for arg in args:
+        if arg == 'as':
+            varname = arg.next()
+        elif arg.isdigit():
+            count = int(arg)
+
+
+# filters
 
 @register.filter('parsedate')
 def parsedate(value, format=None):
