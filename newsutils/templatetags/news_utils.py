@@ -38,6 +38,36 @@ class GoogleNewsNode(template.Node):
         return results
         
 
+class Publish2Node(template.Node):
+    def __init__(self, func, name, topic=None, count=5, var_name=None):
+        self.func = getattr(publish2, func)
+        self.name = template.Variable(name)
+        
+        if topic:
+            self.topic = template.Variable(topic)
+        else:
+            self.topic = None
+        
+        self.count = count
+        self.var_name = var_name
+    
+    
+    def render(self, context):
+        name = self.name.resolve(context)
+        if self.topic:
+            topic = self.topic.resolve(context)
+        else:
+            topic = None
+        
+        feed = self.func(name, topic)
+        links = feed.items[:self.count]
+        if self.var_name:
+            context[self.var_name] = links
+            return ''
+        
+        return [str(i) for i in links]
+
+
 
 @register.tag("google_news")
 def do_google_news(parser, token):
@@ -68,6 +98,7 @@ def do_google_news(parser, token):
         return GoogleNewsNode(args)
 
 
+@register.tag("publish2")
 def do_publish2(parser, token):
     """
     A template tag interface to Publish2.
@@ -90,13 +121,24 @@ def do_publish2(parser, token):
         
     """
     bits = token.split_contents()
+    if len(bits) > 6:
+        raise template.TemplateSyntaxError("%s takes up to 5 args, %i given." % (bits[0]), len(bits))
     func = bits[1]
-    args = bits[2:]
+    name = bits[2]
+    args = iter(bits[3:])
+    
+    var_name = topic = None
+    count = 5
+    
     for arg in args:
         if arg == 'as':
-            varname = arg.next()
+            var_name = args.next()
         elif arg.isdigit():
             count = int(arg)
+        else:
+            topic = arg
+    
+    return Publish2Node(func=func, name=name, topic=topic, count=count, var_name=var_name)
 
 
 # filters

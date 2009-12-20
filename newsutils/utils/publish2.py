@@ -86,15 +86,6 @@ def _slugify(value):
     return unicode(value).lower().replace(' ', '-')
 
 
-def _parse_date(date_str, format_str):
-    "Thin wrapper for error handling"
-    try:
-        dt = datetime.datetime.strptime(date_str, format_str)
-    except ValueError:
-        dt = None
-    return dt
-
-
 def _make_path(url):
     if url.startswith('/'):
         url = BASE_URL + url
