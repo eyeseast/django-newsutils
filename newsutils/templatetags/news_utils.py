@@ -65,6 +65,7 @@ class Publish2Node(template.Node):
             context[self.var_name] = links
             return ''
         
+        # this is really just for debugging
         return [str(i) for i in links]
 
 
