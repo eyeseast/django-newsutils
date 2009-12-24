@@ -21,11 +21,11 @@ class GoogleNewsNode(template.Node):
     
     def render(self, context):
         base_url = 'http://ajax.googleapis.com/ajax/services/search/news?'
-        self.query.resolve(context)
+        query = self.query.resolve(context)
         params = {
             'v': '1.0',
             'rsz': 'large', # get 8 results
-            'q': self.query
+            'q': query
         }
         if hasattr(settings, "GOOGLE_API_KEY"):
             params['key'] = settings.GOOGLE_API_KEY
