@@ -4,6 +4,7 @@ import re
 import urllib
 from django import template
 from django.conf import settings
+from django.utils.dateformat import DateFormat
 
 from newsutils import utils
 from newsutils.utils import publish2
@@ -152,7 +153,6 @@ def parsedate(value, format=None):
     DateFormat, like the built-in date filter.
     """
     import dateutil.parser
-    from django.utils.dateformat import DateFormat
     dt = dateutil.parser.parse(value)
     if format:
         return DateFormat(dt).format(format)
