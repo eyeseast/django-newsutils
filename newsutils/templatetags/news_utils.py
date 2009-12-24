@@ -7,6 +7,7 @@ from django.conf import settings
 
 from newsutils import utils
 from newsutils.utils import publish2
+from newsutils.utils.bitly import Bitly
 
 register = template.Library()
 
@@ -68,6 +69,21 @@ class Publish2Node(template.Node):
         # this is really just for debugging
         return [str(i) for i in links]
 
+
+class BitlyNode(template.Node):
+    def __init__(self, long_url, var_name=None):
+        self.long_url = template.Variable(long_url)
+        self.var_name = var_name
+    
+    
+    def render(self, context):
+        bitly = Bitly(settings.BITLY_LOGIN, settings.BITLY_API_KEY)
+        long_url = self.long_url.resolve(context)
+        short_url = bitly.shorten(long_url)
+        if self.var_name:
+            context[var_name] = short_url
+            return ''
+        return short_url
 
 
 @register.tag("google_news")
@@ -141,6 +157,27 @@ def do_publish2(parser, token):
     
     return Publish2Node(func=func, name=name, topic=topic, count=count, var_name=var_name)
 
+
+@register.tag("bitly")
+def do_bitly(parser, token):
+    """
+    Simple tag for making long urls shorter
+    
+    Just shorten a URL:
+    
+        {% bitly "http://www.chrisamico.com/blog" %}
+    
+    Or, save the result as a variable (to cut down on repeated API calls):
+    
+        {% bitly "http://chrisamico.com/blog" as my_blog %}
+    """
+    bits = token.split_contents()
+    if len(bits) == 2:
+        return BitlyNode(bits[1])
+    elif len(bits) == 4 and bits[2] == 'as':
+        return BitlyNode(bits[1], bits[3])
+    else:
+        raise template.TemplateSyntaxError("%s takes 1 or 3 arguments. %s given" % (bits[0], len(bits)))
 
 # filters
 
