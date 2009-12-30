@@ -31,7 +31,11 @@ class GoogleNewsNode(template.Node):
             params['key'] = settings.GOOGLE_API_KEY
         
         url = base_url + urllib.urlencode(params)
-        results = utils.getjson(url)['responseData']['results']
+        response = utils.getjson(url)
+        if response:
+            results = response['responseData']['results']
+        else:
+            results = ''
         
         if self.var_name:
             context[self.var_name] = results
