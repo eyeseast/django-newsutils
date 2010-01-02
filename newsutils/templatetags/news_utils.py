@@ -32,9 +32,9 @@ class GoogleNewsNode(template.Node):
         
         url = base_url + urllib.urlencode(params)
         response = utils.getjson(url)
-        if response:
+        try:
             results = response['responseData']['results']
-        else:
+        except: # sometimes, weird responses come back that just break
             results = ''
         
         if self.var_name:
