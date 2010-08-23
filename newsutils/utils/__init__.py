@@ -8,6 +8,10 @@ except ImportError:
 
 from django.conf import settings
 
+# Get around settings requirement so we can use this outside a Django project
+if not settings.configured:
+    settings.configure()
+
 DEFAULT_HTTP_HEADERS = {
     "User-Agent": "django-newsutils",
     "Referer": None
