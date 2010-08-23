@@ -2,8 +2,18 @@
 A Python interface for Publish2
 
 Publish2 is a collaborative bookmarking tool for journalists.
-While it doesn't have an API in the strictest sense, it does
-provide JSON and ATOM feeds of any set of links.
+While it doesn't have an official API, but it does offer a 
+filterable feed of links in JSON, XML and RSS.
+
+The API, as it is, allows filtering on the following attributes:
+ - tag
+ - newgroup
+ - source
+ - date added
+ - search query
+
+The number of items returned defaults to 10, and can be set 
+with the number_of_items query argument.
 
 Each feed provides metadata on the journalist or newsgroup
 submitting links. Each item lists a title, link, tags, publication,
@@ -28,7 +38,7 @@ __all__ = ('Publish2Error', 'get_for_journalist', 'get_for_newsgroup')
 class Publish2Error(Exception):
     "Exception for Publish2 errors"
 
-BASE_URL = 'http://www.publish2.com'
+BASE_URL = 'http://www.publish2.com/search/links.json?'
 
 # results
 
@@ -36,7 +46,6 @@ class Publish2Object(object):
     "Base class for Publish2"
     def __init__(self, d):
         self.__dict__ = d
-        
     
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.__str__())
@@ -60,11 +69,10 @@ class Publish2Link(Publish2Object):
         self.publication_date = utils.parsedate(d['publication_date'])
         self.created_date = utils.parsedate(d['created_date'])
         if hasattr(self, 'tags'):
-            tags = self.tags[0].values()
-            self.tags = [Publish2Tag(t) for t in tags]
+            #tags = self.tags[0].values()
+            self.tags = [Publish2Tag(t) for t in self.tags]
         else:
             self.tags = []
-        
             
     def __str__(self):
         return self.title
@@ -80,54 +88,21 @@ class Publish2Feed(Publish2Object):
         return self.title
 
 
-# utils
-def _slugify(value):
-    "Simpler version of Django's slugify filter"
-    return unicode(value).lower().replace(' ', '-')
-
-
-def _make_path(url):
-    if url.startswith('/'):
-        url = BASE_URL + url
-    
-    if url.endswith('/'):
-        url = url.rstrip('/') + '.json'
-    elif url.endswith('rss'):
-        url = url.replace('.rss', '.json')
-    
-    if not url.endswith(u'.json'):
-        url += u'.json'
-    
-    return url
+def search(q='', newsgroup='', tag='', source='', count=10, **kwargs):
+    """
+    Return a filtered Publish2 news feed
+    """
+    kwargs.update({
+        'q': q,
+        'newsgroup': newsgroup,
+        'tag': tag,
+        'source': source,
+        'number_of_items': count,
+    })
+    url = BASE_URL + urllib.urlencode(kwargs)
+    result = json.load(urllib2.urlopen(url))
+    return Publish2Feed(result)
 
 
 
-def get_feed(url):
-    if not url.endswith(u'.json'):
-        url = _make_path(url)
-    
-    try:
-        request = urllib2.urlopen(url).read()
-        feed = json.loads(request)
-        result = Publish2Feed(feed)
-        return result
-    except urllib2.HTTPError, e:
-        raise Publish2Error(e.read())
-    except (ValueError, KeyError), e:
-        raise Publish2Error('Invalid response')
 
-
-def get_for_journalist(name, topic=''):
-    url = u'http://www.publish2.com/journalists/%(username)s/links' % {u'username': _slugify(name)}
-    if topic:
-        url += u"/%s" % _slugify(topic)
-    url += u".json"
-    return get_feed(url)
-
-
-def get_for_newsgroup(name, topic=''):
-    url = u'http://www.publish2.com/newsgroups/%s' % _slugify(name)
-    if topic:
-        url += u"/%s" % _slugify(topic)
-    url += u".json"
-    return get_feed(url)
