@@ -92,10 +92,16 @@ def search(q='', newsgroup='', tag='', source='', count=10, **kwargs):
     """
     Return a filtered Publish2 news feed
     """
+    if tag:
+        if not isinstance(tag, (list, tuple)):
+            tag = [tag]
+        
+        for i, tag in enumerate(tag):
+            kwargs['tag[%s]' % i] = tag
+    
     kwargs.update({
         'q': q,
         'newsgroup': newsgroup,
-        'tag': tag,
         'source': source,
         'number_of_items': count,
     })

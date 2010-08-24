@@ -53,3 +53,8 @@ class Publish2Test(TestCase):
             source = "The New York Times"
         )
         self._url_test(url, p2)
+    
+    def test_multi_tag(self):
+        url = "http://www.publish2.com/search/links.json?tag[1]=san+francisco&tag[2]=KQED&tag[3]=Media+%26+Journalism"
+        p2 = publish2.search(tag=["Media & Journalism", "san francisco", "KQED"])
+        self._url_test(url, p2)
